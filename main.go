@@ -1,10 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
 
+	_ "github.com/lib/pq"
 	"github.com/nitai-b/blog-aggregator/internal/config"
+	"github.com/nitai-b/blog-aggregator/internal/database"
 )
 
 func main() {
@@ -12,11 +15,17 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	db, err := sql.Open("postgres", cfg.DBURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	dbQueries := database.New(db)
 
-	appState := state{cfg: &cfg}
+	appState := state{cfg: &cfg, db: dbQueries}
 
 	commands := commands{handlers: make(map[string]func(*state, command) error)}
 	commands.register("login", handlerLogin)
+	commands.register("register", handlerRegister)
 
 	arguments := os.Args
 	if len(arguments) < 2 {
