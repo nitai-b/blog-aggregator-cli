@@ -89,3 +89,33 @@ func handleFetchFeed(s *state, cmd command) error {
 
 	return nil
 }
+
+func handleAddFeed(s *state, cmd command) error {
+	if len(cmd.args) < 2 {
+		return fmt.Errorf("the register handler expects a 2 arguments, the name and the url")
+	}
+
+	now := time.Now()
+
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	params := database.CreateFeedParams{
+		ID:        uuid.New(),
+		UserID:    user.ID,
+		Name:      cmd.args[0],
+		Url:       cmd.args[1],
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	feed, err := s.db.CreateFeed(context.Background(), params)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("feed: `%s` was created with id: `%s`\n", feed.Name, feed.ID)
+	return nil
+}
