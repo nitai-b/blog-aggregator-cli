@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -56,7 +57,7 @@ func handlerRegister(s *state, cmd command) error {
 	return nil
 }
 
-func handleReset(s *state, cmd command) error {
+func handlerReset(s *state, cmd command) error {
 	err := s.db.DeleteAllUser(context.Background())
 	if err != nil {
 		return err
@@ -64,7 +65,7 @@ func handleReset(s *state, cmd command) error {
 	return nil
 }
 
-func handleGetUsers(s *state, cmd command) error {
+func handlerGetUsers(s *state, cmd command) error {
 	users, err := s.db.GetUsers(context.Background())
 	if err != nil {
 		return err
@@ -79,7 +80,7 @@ func handleGetUsers(s *state, cmd command) error {
 	return nil
 }
 
-func handleFetchFeed(s *state, cmd command) error {
+func handlerFetchFeed(s *state, cmd command) error {
 	feed, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
 	if err != nil {
 		return err
@@ -90,18 +91,17 @@ func handleFetchFeed(s *state, cmd command) error {
 	return nil
 }
 
-func handleAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command) error {
 	if len(cmd.args) < 2 {
-		return fmt.Errorf("the register handler expects a 2 arguments, the name and the url")
+		return fmt.Errorf("the feed handler expects 2 arguments, the name and the url")
 	}
-
-	now := time.Now()
 
 	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
 	if err != nil {
 		return err
 	}
 
+	now := time.Now()
 	params := database.CreateFeedParams{
 		ID:        uuid.New(),
 		UserID:    user.ID,
@@ -117,5 +117,11 @@ func handleAddFeed(s *state, cmd command) error {
 	}
 
 	fmt.Printf("feed: `%s` was created with id: `%s`\n", feed.Name, feed.ID)
+	data, err := json.MarshalIndent(feed, "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(data))
+
 	return nil
 }
