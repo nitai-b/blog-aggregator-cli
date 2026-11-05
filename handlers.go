@@ -125,3 +125,17 @@ func handlerAddFeed(s *state, cmd command) error {
 
 	return nil
 }
+
+func handlerGetFeeds(s *state, cmd command) error {
+	feeds, err := s.db.GetFeedsWithUser(context.Background())
+	if err != nil {
+		return err
+	}
+
+	data, err := json.MarshalIndent(feeds, "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(data))
+	return nil
+}
