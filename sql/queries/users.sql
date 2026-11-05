@@ -14,3 +14,8 @@ WHERE name = $1;
 
 -- name: DeleteAllUser :exec
 TRUNCATE TABLE users RESTART IDENTITY;
+
+-- name: GetUsers :many
+SELECT *
+  FROM users
+  ORDER BY created_at DESC;
