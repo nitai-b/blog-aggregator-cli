@@ -26,11 +26,9 @@ type RSSItem struct {
 }
 
 func fetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
-	var feed RSSFeed
-
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, feedURL, nil)
 	if err != nil {
-		return &feed, err
+		return nil, err
 	}
 
 	client := &http.Client{}
@@ -38,22 +36,23 @@ func fetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
 	req.Header.Set("User-Agent", "gator")
 	resp, err := client.Do(req)
 	if err != nil {
-		return &feed, err
+		return nil, err
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return &feed, fmt.Errorf("unexpected status: %d", resp.StatusCode)
+		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return &feed, err
+		return nil, err
 	}
 
+	var feed RSSFeed
 	if err := xml.Unmarshal(body, &feed); err != nil {
-		return &feed, err
+		return nil, err
 	}
 
 	feed.Channel.Description = html.UnescapeString(feed.Channel.Description)
