@@ -12,3 +12,5 @@ RETURNING *;
 SELECT * FROM users
 WHERE name = $1;
 
+-- name: DeleteAllUser :exec
+TRUNCATE TABLE users RESTART IDENTITY;

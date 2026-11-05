@@ -15,6 +15,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	db, err := sql.Open("postgres", cfg.DBURL)
 	if err != nil {
 		log.Fatal(err)
@@ -26,6 +27,7 @@ func main() {
 	commands := commands{handlers: make(map[string]func(*state, command) error)}
 	commands.register("login", handlerLogin)
 	commands.register("register", handlerRegister)
+	commands.register("reset", handleReset)
 
 	arguments := os.Args
 	if len(arguments) < 2 {
