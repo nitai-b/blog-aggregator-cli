@@ -31,6 +31,8 @@ func main() {
 	commands.register("users", handlerGetUsers)
 	commands.register("addfeed", handlerAddFeed)
 	commands.register("feeds", handlerGetFeeds)
+	commands.register("follow", handlerFollow)
+	commands.register("following", handlerFollowing)
 	commands.register("agg", handlerFetchFeed)
 
 	arguments := os.Args

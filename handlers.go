@@ -116,6 +116,17 @@ func handlerAddFeed(s *state, cmd command) error {
 		return err
 	}
 
+	followParams := database.CreateFeedFollowParams{
+		ID:     uuid.New(),
+		UserID: user.ID,
+		FeedID: feed.ID,
+	}
+
+	_, err = s.db.CreateFeedFollow(context.Background(), followParams)
+	if err != nil {
+		return err
+	}
+
 	fmt.Printf("feed: `%s` was created with id: `%s`\n", feed.Name, feed.ID)
 	data, err := json.MarshalIndent(feed, "", "  ")
 	if err != nil {
@@ -137,5 +148,55 @@ func handlerGetFeeds(s *state, cmd command) error {
 		return err
 	}
 	fmt.Println(string(data))
+	return nil
+}
+
+func handlerFollow(s *state, cmd command) error {
+	if len(cmd.args) == 0 {
+		return fmt.Errorf("the follow handler expects a single argument, the url")
+	}
+
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+
+	feed, err := s.db.GetFeedByURL(context.Background(), cmd.args[0])
+	if err != nil {
+		return fmt.Errorf("couldn't find feed with URL:%s\nerror:%w", cmd.args[0], err)
+	}
+
+	params := database.CreateFeedFollowParams{
+		ID:     uuid.New(),
+		UserID: user.ID,
+		FeedID: feed.ID,
+	}
+
+	feedFollow, err := s.db.CreateFeedFollow(context.Background(), params)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("User: %s\nis now following feed: %s\n", feedFollow.UserName, feedFollow.FeedName)
+
+	return nil
+}
+
+func handlerFollowing(s *state, cmd command) error {
+	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
+	if err != nil {
+		return err
+	}
+	userFollowing, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
+	if err != nil {
+		return err
+	}
+
+	data, err := json.MarshalIndent(userFollowing, "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(data))
+
 	return nil
 }
